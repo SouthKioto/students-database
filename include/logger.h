@@ -1,8 +1,17 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-void init_logging(const char *filename);
-void close_logging();
-void log_message(const char *text);
+#include <stdbool.h>
+
+typedef enum {
+  LOG_DEBUG,
+  LOG_INFO,
+  LOG_WARN,
+  LOG_ERROR,
+} LogLevel;
+
+bool logger_init(const char *path, LogLevel level);
+void logger_log(LogLevel level, const char *fmt, ...);
+void logger_close(void);
 
 #endif // !LOGGER_H

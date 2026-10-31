@@ -1,42 +1,68 @@
 #include "../include/logger.h"
-#include <time.h>
-
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define INIT_BUFFER_SIZE 100
+#include <string.h>
+#include <time.h>
 
-static FILE *log_file = NULL;
-void init_logging(const char *filename) {
-  if (filename) {
-    log_file = fopen(filename, "a");
-    if (!log_file) {
-      fprintf(stderr, "Failed to open log file: %s\n", filename);
-      exit(EXIT_FAILURE);
-    }
-  } else {
-    log_file = stdout;
+#define INIT_BUFFER_SIZE 20
+
+static char **log_buf;
+static size_t log_count;
+static size_t log_capacity;
+static FILE *log_file;
+static LogLevel min_level;
+
+bool logger_init(const char *path, LogLevel level) {
+  log_count = 0;
+  log_file = fopen(path, "a");
+  if (log_file == NULL) {
+    return false;
   }
-}
 
-void close_logging() {
-  if (log_file && log_file != stdout) {
+  min_level = level;
+  log_buf = malloc(INIT_BUFFER_SIZE * sizeof *log_buf);
+  if (!log_buf) {
     fclose(log_file);
     log_file = NULL;
+    return false;
   }
+  log_capacity = INIT_BUFFER_SIZE;
+
+  return true;
 }
 
-void log_message(const char *text) {
+void logger_log(LogLevel level, const char *fmt, ...) {
   if (!log_file) {
-    fprintf(stderr, "Logging not initialized.\n");
     return;
   }
-  time_t now = time(NULL);
-  struct tm *t = localtime(&now);
 
-  char buffer[INIT_BUFFER_SIZE];
+  if (level < min_level) {
+    return;
+  }
 
-  strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", t);
+  time_t fullTime = time(NULL);
+  struct localTime = localtime(&fullTime);
 
-  fprintf(log_file, "%s %s\n", buffer, text);
-  fflush(log_file);
+  char buffor[256];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buffor, 256, fmt, args);
+  va_end(args);
+}
+
+void logger_close(void) {
+  if (log_file) {
+    fclose(log_file);
+  }
+
+  for (size_t i = 0; i < log_count; i++) {
+    free(log_buf[i]);
+  }
+
+  free(log_buf);
+  log_count = 0;
+  log_capacity = 0;
+  log_buf = NULL;
+  log_file = NULL;
 }

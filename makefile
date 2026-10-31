@@ -1,5 +1,5 @@
 CC       := gcc
-CFLAGS   := -std=c17 -Wall -Wextra -Werror -pedantic -D_FORTIFY_SOURCE=2 -O1
+CFLAGS   := -std=c17 -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -D_FORTIFY_SOURCE=2 -O1
 CPPFLAGS := -Iinclude -MMD -MP
 LDFLAGS  :=
 LDLIBS   :=
